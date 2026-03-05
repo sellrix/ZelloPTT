@@ -1,10 +1,7 @@
 package com.zellopttt;
 
 import android.accessibilityservice.AccessibilityService;
-import android.accessibilityservice.GestureDescription;
 import android.content.Intent;
-import android.graphics.Path;
-import android.graphics.Rect;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.KeyEvent;
@@ -68,30 +65,21 @@ public class PTTService extends AccessibilityService {
             Log.d(TAG, "Root is null");
             return;
         }
-        
-        // Log all clickable nodes so we can find the PTT button
         findAndClickPTT(root);
         root.recycle();
     }
 
     private void findAndClickPTT(AccessibilityNodeInfo node) {
         if (node == null) return;
-        
-        // Try to find by content description or class
-        String desc = node.getContentDescription() != null ? 
+        String desc = node.getContentDescription() != null ?
                       node.getContentDescription().toString().toLowerCase() : "";
-        String className = node.getClassName() != null ? 
-                          node.getClassName().toString().toLowerCase() : "";
-        
-        Log.d(TAG, "Node: desc=" + desc + " class=" + className + " clickable=" + node.isClickable());
-        
-        if (node.isClickable() && (desc.contains("ptt") || desc.contains("talk") || 
+        Log.d(TAG, "Node: desc=" + desc + " clickable=" + node.isClickable());
+        if (node.isClickable() && (desc.contains("ptt") || desc.contains("talk") ||
             desc.contains("push") || desc.contains("transmit"))) {
             Log.d(TAG, "Found PTT button: " + desc);
             node.performAction(AccessibilityNodeInfo.ACTION_CLICK);
             return;
         }
-        
         for (int i = 0; i < node.getChildCount(); i++) {
             AccessibilityNodeInfo child = node.getChild(i);
             findAndClickPTT(child);
@@ -99,8 +87,3 @@ public class PTTService extends AccessibilityService {
         }
     }
 }
-```
-
-Commit, build, uninstall, install. Then after pressing the button run this to see what Zello's PTT button is actually called:
-```
-C:\Users\dovyg\Downloads\platform-tools-latest-windows\platform-tools\adb.exe shell logcat -s ZelloPTT
